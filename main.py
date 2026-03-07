@@ -24,13 +24,10 @@ class background():
      self.vpn_connected = False
 
     def fail_self(self):
-     try:
-        while True:
-         print("Mullvad VPN disconnected!")
-         # Run the failsafe command
-         os.system(self.FAILSAFE_COMMAND)
-     except KeyboardInterrupt:
-        exit()
+     print("Mullvad VPN disconnected!")
+     # Run the failsafe command
+     os.system(self.FAILSAFE_COMMAND)
+
 
     def connection_status_green(self):
      print("Mullvad VPN is connected.")
@@ -49,6 +46,9 @@ class background():
                         if "connected" in json_response and json_response["connected"]:
                             self.connection_status_green()
                             return True
+                        if "You are not connected" in json_response and json_response["You are not connected"]:
+                           self.fail_self()
+                           return False
                 except requests.JSONDecodeError:
                         # If it fails, treat as plain text
                         response_text = response.text.strip()
@@ -56,6 +56,9 @@ class background():
                         if "You are connected to Mullvad" in response_text:
                             self.connection_status_green()
                             return True
+                        else:
+                           self.fail_self()
+                           return False
              else:
                 self.logger.critical(F"CRITICAL NON-200 STATUS CODE: {response.status_code}")
                 self.logger.critical(F"Response text: {response.text}")
