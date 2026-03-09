@@ -3,6 +3,7 @@ import requests
 import os
 import platform
 import logging
+import subprocess
 
 class background():
     def __init__(self):
@@ -20,17 +21,24 @@ class background():
       self.is_arch = False
      self.MULLVAD_VPN_CHECK_URL = "https://am.i.mullvad.net/connected"  # URL to check Mullvad VPN status
      self.CHECK_INTERVAL = 5  # Time in seconds between checks
-     self.FAILSAFE_COMMAND = "/path/to/your/failsafe/script.sh"  
+     self.FAILSAFE_COMMAND = r"failsafe\window\winsafe.ps1"
+     self.abs_path = os.path.abspath(self.FAILSAFE_COMMAND)  
+     self.INIT = r"networks fail safe\init.ps1" 
      self.vpn_connected = False
 
     def fail_self(self):
      print("Mullvad VPN disconnected!")
-     # Run the failsafe command
-     os.system(self.FAILSAFE_COMMAND)
-
+     result = subprocess.run(["powershell", "-ExecutionPolicy", "Bypass", "-File", self.abs_path], capture_output=True, text=True)
+     print(result.stdout)
+     if result.stderr:
+      print(f"Error: {result.stderr}")
 
     def connection_status_green(self):
      print("Mullvad VPN is connected.")
+     result = subprocess.run(["powershell", "-ExecutionPolicy", "Unrestricted", "-File", self.INIT], capture_output=True, text=True)
+     print(result.stdout)
+     if result.stderr:
+      print(f"Error: {result.stderr}")
      time.sleep(self.CHECK_INTERVAL)
      self.vpn_connected = True
 
